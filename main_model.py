@@ -7,15 +7,11 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Lambda, Input, Conv2D, BatchNormalization, Conv2DTranspose, Concatenate, LayerNormalization, PReLU, ZeroPadding2D
 from tensorflow.keras.callbacks import ReduceLROnPlateau, CSVLogger, EarlyStopping, ModelCheckpoint
 
-import soundfile as sf
-import librosa
 from random import seed
 import numpy as np
-import tqdm
 
 from modules import DprnnBlock
 from utils import reshape, transpose, ParallelModelCheckpoints
-from data_loader import *
 from tensorflow.python.framework.ops import disable_eager_execution
 
 seed(42)
@@ -407,57 +403,7 @@ class DPCRN_model():
         end_time = time.time()
         print(f"train time:{end_time - start_time} s")
         # clear out garbage
-        tf.keras.backend.clear_session()
-    
-    def test(self, noisy, out = None, weights_file = None):
-        '''
-        Method to test a trained model on a single file or a dataset.
-        '''
-        if weights_file:
-            self.model.load_weights(weights_file)
-            
-        if os.path.exists(noisy):
-            if os.path.isdir(noisy):
-                file_list = librosa.util.find_files(noisy,ext = 'wav')
-                if not os.path.exists(out):
-                    os.mkdir(out)
-                for f in tqdm.tqdm(file_list):
-                    self.enhancement_single(f, output_f = os.path.join(out,os.path.split(f)[-1]), plot = False)
-            if os.path.isfile(noisy):
-                self.enhancement_single(noisy, output_f = out, plot = True)
-        else:
-            raise ValueError('The noisy file does not exist!')
-            
-    def enhancement_single(self, noisy_f, output_f = './enhance_s.wav', plot = True):
-        '''
-        Method to enhance a single file and plot figure
-        '''
-        if not self.model:
-            raise ValueError('The DPCRN model is not defined!')
-             
-        noisy_s = sf.read(noisy_f,dtype = 'float32')[0]
-        
-        enh_s = self.model.predict(np.array([noisy_s]))
-        
-        enh_s = enh_s[0]
-    
-        if plot:
-            import matplotlib.pyplot as plt
-            spec_n = librosa.stft(noisy_s,400,200,center = False)
-            spec_e = librosa.stft(enh_s, 400,200,center = False)
-            plt.figure(0)
-            plt.plot(noisy_s)
-            plt.plot(enh_s)
-            plt.legend(['noisy signal','enhanced signal'])
-            plt.figure(1)
-            plt.subplot(211)
-            plt.imshow(np.log(abs(spec_n) + 1e-8),cmap= 'jet',origin ='lower')
-            plt.title('spectrogram of noisy speech')
-            plt.subplot(212)
-            plt.imshow(np.log(abs(spec_e) + 1e-8),cmap= 'jet',origin ='lower')
-            plt.title('spectrogram of enhanced speech')
-        sf.write(output_f,enh_s,16000)
-        return noisy_s,enh_s    
+        tf.keras.backend.clear_session()  
     
     def get_config(self):
         config = super().get_config().copy()

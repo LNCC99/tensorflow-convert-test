@@ -11,7 +11,7 @@ import numpy as np
 os.environ["CUDA_VISIBLE_DEVICES"] = '0' 
 def representative_data_gen():
    for _ in range(2):
-      yield [np.random.rand(1,3,201,2).astype(np.float32)]
+      yield [np.random.rand(1,1,201,2).astype(np.float32)]
       
 
 dpcrn = DPCRN_model(batch_size = 1, 

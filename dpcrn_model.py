@@ -20,7 +20,7 @@ from tensorflow.python.framework.ops import disable_eager_execution
 
 seed(42)
 fftifft_enable = False
-dpcrnn_enable = True
+dpcrnn_enable = False
 batchNorm_enable = True
 LayerNorm_enable = False
 class DPCRN_model():
@@ -258,7 +258,7 @@ class DPCRN_model():
             input_complex_spec = Concatenate(axis = -1)([real,imag])
         else:
             #time_dat = Input(batch_shape=(self.batch_size, None,self.block_len // 2 + 1,2))
-            time_dat = Input(batch_shape=(self.batch_size, 3,self.block_len // 2 + 1,2))
+            time_dat = Input(batch_shape=(self.batch_size, None,self.block_len // 2 + 1,2))
             input_complex_spec =  time_dat
         
         '''encoder'''
